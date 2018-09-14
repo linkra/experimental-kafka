@@ -16,6 +16,12 @@ import java.util.Properties;
 
 public class App {
     public static void main(String[] args) {
+
+        produceLocally();
+        consumeLocally();
+    }
+
+    private static void produceLocally() {
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
         props.put("acks", "all");
@@ -32,11 +38,11 @@ public class App {
         }
 
         producer.close();
-        consume();
+
     }
 
 
-    private static void consume() {
+    private static void consumeLocally() {
 
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
@@ -56,6 +62,7 @@ public class App {
 
         for (ConsumerRecord<String, String> record : records) {
             buffer.add(record);
+          //  produceCloudy(record);
             System.out.printf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), record.value());
         }
 
@@ -65,7 +72,24 @@ public class App {
         }
     }
 
-    private static void stream() {
+    private static void produceCloudy(ConsumerRecord<String, String> record) {
+        Properties props = new Properties();
+        props.put("bootstrap.servers", ""); // FIXME!!
+        props.put("acks", "all");
+        props.put("retries", 0);
+        props.put("batch.size", 16384);
+        props.put("linger.ms", 1);
+        props.put("buffer.memory", 33554432);
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
+        Producer<String, String> producer = new KafkaProducer<>(props);
+        for (int i = 0; i < 1000; i++) {
+            producer.send(new ProducerRecord<>("cloud_topic_farm_1", Integer.toString(i), Integer.toString(i)));
+        }
+
+        producer.close();
     }
+
+
 }

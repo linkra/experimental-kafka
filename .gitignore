@@ -1,4 +1,4 @@
-# ignore all logs
 *.log
 *.iml
 *.idea
+*.xml
